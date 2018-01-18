@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.constraint.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <GridView
+        android:id="@+id/gridview_day"
+        android:layout_height="0dp"
+        android:layout_width="match_parent"
+        android:numColumns="7"
+        android:listSelector="#ffffff"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        >
+    </GridView>
+
+
+</android.support.constraint.ConstraintLayout>
