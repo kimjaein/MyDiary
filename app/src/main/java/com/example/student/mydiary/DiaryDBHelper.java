@@ -17,7 +17,7 @@ import java.util.List;
 public class DiaryDBHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "my_diary.db";
-    private static final int DB_VERSION = 2;
+    private static final int DB_VERSION = 3;
 
     private SQLiteDatabase db;
 
@@ -41,13 +41,14 @@ public class DiaryDBHelper extends SQLiteOpenHelper {
                     +");";
         db.execSQL(sql);
 
-        String sql2 = "CREATE TABLE IF NOT EXISTS GROUP_TABLE("
-                    +"GROUP_NAME TEXT"
+        String sql2 = "CREATE TABLE IF NOT EXISTS CATEGORY_TABLE("
+                    +"CATEGORY TEXT"
                     +");";
         db.execSQL(sql2);
-        db.execSQL("INSERT INTO GROUP_TABLE VALUES('일정');");
-        db.execSQL("INSERT INTO GROUP_TABLE VALUES('할일');");
-        db.execSQL("INSERT INTO GROUP_TABLE VALUES('일기');");
+        db.execSQL("INSERT INTO CATEGORY_TABLE VALUES('일정');");
+        db.execSQL("INSERT INTO CATEGORY_TABLE VALUES('할일');");
+        db.execSQL("INSERT INTO CATEGORY_TABLE VALUES('일기');");
+        db.execSQL("INSERT INTO CATEGORY_TABLE VALUES('선택안함');");
     }
 
     @Override
@@ -66,12 +67,12 @@ public class DiaryDBHelper extends SQLiteOpenHelper {
         values.put("TEXT_COLOR",toDoVO.getTextColor());
         db.insert("TODO_TABLE", null, values);
     }
-    public void insert(String category){
-        db.execSQL("INSERT INTO GROUP_TABLE VALUES('"+category+"');");
+    public void insertCategory(String category){
+        db.execSQL("INSERT INTO CATEGORY_TABLE VALUES('"+category+"');");
     }
 
-    public ArrayList<String> selectGroupList(){
-        String sql = "SELECT * FROM GROUP_TABLE ";
+    public ArrayList<String> selectCategoryList(){
+        String sql = "SELECT * FROM CATEGORY_TABLE";
         Cursor cursor = db.rawQuery(sql,null);
         ArrayList<String> groupList= new ArrayList<>();
         while(cursor.moveToNext()){

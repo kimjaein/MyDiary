@@ -3,16 +3,23 @@ package com.example.student.mydiary;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
 
 /**
  * Created by student on 2018-01-15.
@@ -71,6 +78,20 @@ public class AddToDoActivity extends Activity {
                 finish();
             }
         });
+        editCategory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                selectCategoryDialog().show();
+            }
+        });
+        editCategory.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if(hasFocus== true){
+                    selectCategoryDialog().show();
+                }
+            }
+        });
         btnCancle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -101,8 +122,74 @@ public class AddToDoActivity extends Activity {
     }
 
     public Dialog selectCategoryDialog() {
-        Dialog custom = new Dialog(this);
+        final Dialog custom = new Dialog(this);
+        custom.setContentView(R.layout.dialog_category_list);
 
+        ListView listView = custom.findViewById(R.id.category_list);
+        Button btnAddCategory = custom.findViewById(R.id.btn_add_category);
+        Button btnClose = custom.findViewById(R.id.btn_close_category);
+
+        btnClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                custom.cancel();
+            }
+        });
+        btnAddCategory.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                addCategory().show();
+                custom.cancel();
+            }
+        });
+
+
+        final ArrayList<String> categoryList =helper.selectCategoryList();
+
+        CategoryListAdapter adapter = new CategoryListAdapter(this,android.R.layout.simple_expandable_list_item_1,categoryList);
+        listView.setAdapter(adapter);
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                editCategory.setText(categoryList.get(position));
+                custom.cancel();
+            }
+        });
+
+        return custom;
+    }
+    public Dialog addCategory(){
+        final Dialog custom = new Dialog(this);
+        custom.setContentView(R.layout.dialog_add_category);
+
+        final EditText editAddCategory = custom.findViewById(R.id.edit_add_category);
+        Button btnSave = custom.findViewById(R.id.btn_add_category_save);
+        Button btnClose = custom.findViewById(R.id.btn_add_category_close);
+
+        btnSave.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String str=editAddCategory.getText().toString().trim();
+                if(str.length()>0) {
+                    helper.insertCategory(editAddCategory.getText().toString().trim());
+                    custom.cancel();
+                }else{
+                    Toast.makeText(getApplicationContext(),"한글자 이상 입력해 주세요",Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        btnClose.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                custom.cancel();
+            }
+        });
+        return custom;
+    }
+    public Dialog colorSelectDialog(){
+        final Dialog custom =  new Dialog(this);
+        Dialog
         return custom;
     }
 
