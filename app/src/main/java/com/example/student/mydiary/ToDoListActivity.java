@@ -4,8 +4,11 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
+import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ExpandableListView;
+import android.widget.PopupMenu;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,22 +20,27 @@ import java.util.HashMap;
 public class ToDoListActivity extends Activity {
     private ExpandableAdapter expandableAdapter;
     private ArrayList<String> groupList;
-    private HashMap<String,ArrayList<ToDoVO>> childList;
+    private HashMap<String, ArrayList<ToDoVO>> childList;
     private ExpandableListView expandableListView;
     private DiaryDBHelper helper;
+    private Button btnSort;
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_to_do_list);
 
-        expandableListView =  findViewById(R.id.expandable_listview);
-        ListData();
 
-        expandableAdapter =  new ExpandableAdapter(this,groupList,childList);
+        btnSort = findViewById(R.id.btn_sort);
+
+        expandableListView = findViewById(R.id.expandable_listview);
+        ListDataByDate();
+
+        expandableAdapter = new ExpandableAdapter(this, groupList, childList);
         expandableListView.setAdapter(expandableAdapter);
 
-        for(int i=0;i<expandableAdapter.getGroupCount();i++){
+        for (int i = 0; i < expandableAdapter.getGroupCount(); i++) {
             expandableListView.expandGroup(i);
         }
         expandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
@@ -50,21 +58,64 @@ public class ToDoListActivity extends Activity {
             }
         });
 
-    }
-    private void ListData(){
-        groupList =  new ArrayList<>();
-        childList =  new HashMap<>();
+        btnSort.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                PopupMenu popupMenu = new PopupMenu(ToDoListActivity.this, v);
 
-        helper =new DiaryDBHelper(this);
-        groupList = helper.selectToDoListByDate();
+                popupMenu.getMenuInflater().inflate(R.menu.popup_memu, popupMenu.getMenu());
+                popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                    @Override
+                    public boolean onMenuItemClick(MenuItem item) {
+                        String title = item.getTitle() + "";
+                        Log.d("popup", title);
+                        if (title.equals("날짜순")) {
+                            ListDataByDate();
+                        } else {
+                            ListDataByCategory();
+                        }
+                        expandableAdapter = new ExpandableAdapter(getApplicationContext(), groupList, childList);
+                        expandableListView.setAdapter(expandableAdapter);
+                        for (int i = 0; i < expandableAdapter.getGroupCount(); i++) {
+                            expandableListView.expandGroup(i);
+                        }
+                        return false;
+                    }
 
-        for(int i=0;i<groupList.size();i++){ // 날짜별 리스트 불러와서 child Map에 담기
-            ArrayList<ToDoVO> toDoVOList = helper.selectToDoList(groupList.get(i));
-            childList.put(groupList.get(i),toDoVOList);
-        }
-    //    childList.put(groupList.get(0),helper.selectToDoListAll());
-        ArrayList<ToDoVO> toDoVOList =helper.selectToDoListAll();
-        for(ToDoVO list : toDoVOList){
+                });
+                popupMenu.show();
+            }
+        });
+
+    }
+
+    private void ListDataByDate() {
+        groupList = new ArrayList<>();
+        childList = new HashMap<>();
+
+        helper = new DiaryDBHelper(this);
+
+        groupList = helper.selectDateList();
+
+        for (int i = 0; i < groupList.size(); i++) { // 날짜별 리스트 불러와서 child Map에 담기
+            ArrayList<ToDoVO> toDoVOList = helper.selectToDoListByDate(groupList.get(i));
+            childList.put(groupList.get(i), toDoVOList);
         }
     }
+
+    private void ListDataByCategory() {
+        groupList = new ArrayList<>();
+        childList = new HashMap<>();
+
+        helper = new DiaryDBHelper(this);
+
+        groupList = helper.selectCategoryList();
+
+        for (int i = 0; i < groupList.size(); i++) { // 날짜별 리스트 불러와서 child Map에 담기
+            ArrayList<ToDoVO> toDoVOList = helper.selectToDoListByCategory(groupList.get(i));
+            childList.put(groupList.get(i), toDoVOList);
+        }
+    }
+
 }
+

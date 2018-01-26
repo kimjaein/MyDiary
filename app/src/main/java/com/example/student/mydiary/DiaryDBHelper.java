@@ -17,7 +17,7 @@ import java.util.List;
 public class DiaryDBHelper extends SQLiteOpenHelper {
 
     private static final String DB_NAME = "my_diary.db";
-    private static final int DB_VERSION = 3;
+    private static final int DB_VERSION = 4;
 
     private SQLiteDatabase db;
 
@@ -45,16 +45,17 @@ public class DiaryDBHelper extends SQLiteOpenHelper {
                     +"CATEGORY TEXT"
                     +");";
         db.execSQL(sql2);
+
+        db.execSQL("INSERT INTO CATEGORY_TABLE VALUES('선택안함');");
         db.execSQL("INSERT INTO CATEGORY_TABLE VALUES('일정');");
         db.execSQL("INSERT INTO CATEGORY_TABLE VALUES('할일');");
         db.execSQL("INSERT INTO CATEGORY_TABLE VALUES('일기');");
-        db.execSQL("INSERT INTO CATEGORY_TABLE VALUES('선택안함');");
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS TODO_TABLE");
-        db.execSQL("DROP TABLE IF EXISTS GROUP_TABLE");
+        db.execSQL("DROP TABLE IF EXISTS CATEGORY_TABLE");
         onCreate(db);
     }
 /////////////////////////////////////////////////////////
@@ -81,30 +82,8 @@ public class DiaryDBHelper extends SQLiteOpenHelper {
         return groupList;
     }
 
-    public ArrayList<ToDoVO> selectToDoList(String date){
-        String sql = "SELECT TODO_NUMBER, TITLE, DATE ,CONTENTS ,CATEGORY , TEXT_COLOR "
-                +" FROM TODO_TABLE WHERE DATE='"+date+"'";
-        Cursor cursor = db.rawQuery(sql, null);
-        ArrayList<ToDoVO> TodoVOList = new ArrayList<>();
-        Log.d("msg db","while 전"+date);
-        while(cursor.moveToNext()){
-            // 칼럼 번호 인덱스는 0부터 시작
-            ToDoVO toDoVO = new ToDoVO();
-            toDoVO.setToDoNum(cursor.getInt(0));
-            toDoVO.setTitle(cursor.getString(1));
-            toDoVO.setDate(cursor.getString(2));
-            toDoVO.setContents(cursor.getString(3));
-            toDoVO.setCategory(cursor.getString(4));
-            toDoVO.setTextColor(cursor.getString(5));
-
-            TodoVOList.add(toDoVO);
-            Log.d("msg db",date + " / "+toDoVO.toString());
-        }
-        return TodoVOList;
-    }
-
-    public ArrayList<String> selectToDoListByDate(){
-        String sql = "SELECT DATE FROM TODO_TABLE GROUP BY DATE"; // 중복 제거
+    public ArrayList<String> selectDateList(){
+        String sql = "SELECT DATE FROM TODO_TABLE GROUP BY DATE ORDER BY DATE"; // 중복 제거
         Cursor cursor = db.rawQuery(sql,null);
         ArrayList<String> dateList= new ArrayList<>();
         while(cursor.moveToNext()){
@@ -112,9 +91,21 @@ public class DiaryDBHelper extends SQLiteOpenHelper {
         }
         return dateList;
     }
-    public ArrayList<ToDoVO> selectToDoListAll(){
+
+    public ArrayList<String> selectDateListByMonth(String year,String month){
+        String sql = "SELECT DATE FROM TODO_TABLE WHERE DATE LIKE '"+year+"-"+month+"-%'GROUP BY DATE ORDER BY DATE"; // 중복 제거
+        Cursor cursor = db.rawQuery(sql,null);
+        ArrayList<String> dateList= new ArrayList<>();
+        while(cursor.moveToNext()){
+            dateList.add(cursor.getString(0));
+        }
+        return dateList;
+    }
+
+    public ArrayList<ToDoVO> selectToDoListByDate(String date){
         String sql = "SELECT TODO_NUMBER, TITLE, DATE ,CONTENTS ,CATEGORY , TEXT_COLOR "
-                +" FROM TODO_TABLE";
+                +" FROM TODO_TABLE where date ='"+date+"' ORDER BY DATE";
+
         Cursor cursor = db.rawQuery(sql, null);
         ArrayList<ToDoVO> TodoVOList = new ArrayList<>();
 
@@ -129,7 +120,40 @@ public class DiaryDBHelper extends SQLiteOpenHelper {
             toDoVO.setTextColor(cursor.getString(5));
 
             TodoVOList.add(toDoVO);
+        }
+        return TodoVOList;
+    }
 
+    public void updateDiary(ToDoVO toDoVO){
+        ContentValues values = new ContentValues();
+        values.put("TITLE", toDoVO.getTitle());
+        values.put("DATE",toDoVO.getDate());
+        values.put("CONTENTS",toDoVO.getContents());
+        values.put("CATEGORY",toDoVO.getCategory());
+        values.put("TEXT_COLOR",toDoVO.getTextColor());
+        db.update("TODO_TABLE", values, "TODO_NUMBER="+toDoVO.getToDoNum(),null);
+    }
+    public void deleteDialry(int todoNum){
+        db.delete("TODO_TABLE","TODO_NUMBER="+todoNum,null);
+    }
+    public ArrayList<ToDoVO> selectToDoListByCategory(String category){
+        String sql = "SELECT TODO_NUMBER, TITLE, CATEGORY,CONTENTS,DATE, TEXT_COLOR "
+                +" FROM TODO_TABLE WHERE CATEGORY ='"+category+"' ORDER BY DATE";
+
+        Cursor cursor = db.rawQuery(sql, null);
+        ArrayList<ToDoVO> TodoVOList = new ArrayList<>();
+
+        while(cursor.moveToNext()){
+            // 칼럼 번호 인덱스는 0부터 시작
+            ToDoVO toDoVO = new ToDoVO();
+            toDoVO.setToDoNum(cursor.getInt(0));
+            toDoVO.setTitle(cursor.getString(1));
+            toDoVO.setDate(cursor.getString(2));
+            toDoVO.setContents(cursor.getString(3));
+            toDoVO.setCategory(cursor.getString(4));
+            toDoVO.setTextColor(cursor.getString(5));
+
+            TodoVOList.add(toDoVO);
         }
         return TodoVOList;
     }

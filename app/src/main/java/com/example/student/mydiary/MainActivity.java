@@ -13,6 +13,7 @@ import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
     private ImageButton btnAdd;
     public static int selectedDate;
     public static Calendar selectedCal;
+    private MyPagerAdapter myPagerAdapter;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -48,7 +50,7 @@ public class MainActivity extends AppCompatActivity {
         btnList = findViewById(R.id.btn_todo_list);
 
         int year = 2018;
-        int month = 1;
+        int month = 01;
         for(int i =0 ;i<frags.length ;i ++){
             frags[i] = new CalendarFragment();
             Bundle bundle = new Bundle();
@@ -88,8 +90,10 @@ public class MainActivity extends AppCompatActivity {
         dayOfWeekGridAdapter = new DayOfWeekGridAdapter(getApplicationContext(), dayOfWeekList,mCal);
         gridViewDayOfWeek.setAdapter(dayOfWeekGridAdapter);
 
-        viewPager.setAdapter(new MyPagerAdapter
-                (getSupportFragmentManager()));
+        myPagerAdapter = new MyPagerAdapter
+                (getSupportFragmentManager());
+
+        viewPager.setAdapter(myPagerAdapter);
 
 
         viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -102,10 +106,10 @@ public class MainActivity extends AppCompatActivity {
             public void onPageSelected(int position) {
                 if(position != 0) {
                     tvYear.setText((2018 + (position / 12)) + "년");
-                    tvMonth.setText((position%12+1)+"월");
+                    tvMonth.setText(String.format("%02d"+"월",(position%12+1)));
                 }else{
-                    tvYear.setText(2018 + "년");
-                    tvMonth.setText(1+"월");
+                    tvYear.setText("2018년");
+                    tvMonth.setText("01월");
                 }
             }
 
@@ -162,4 +166,11 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        myPagerAdapter.notifyDataSetChanged();
+        viewPager.setAdapter(myPagerAdapter);
+       viewPager.setCurrentItem(selectedCal.get(Calendar.MONTH));
+    }
 }

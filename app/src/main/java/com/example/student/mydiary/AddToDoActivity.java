@@ -3,13 +3,20 @@ package com.example.student.mydiary;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.app.Dialog;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.Paint;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
@@ -21,6 +28,8 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import yuku.ambilwarna.AmbilWarnaDialog;
+
 /**
  * Created by student on 2018-01-15.
  */
@@ -30,6 +39,8 @@ public class AddToDoActivity extends Activity {
     private Button btnCancle, btnSave;
     private TextView selectedTextColor;
     private DiaryDBHelper helper;
+    private Paint mPaint;
+    int mDefaultColor;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -43,8 +54,12 @@ public class AddToDoActivity extends Activity {
         editMemo = findViewById(R.id.edit_memo);
         selectedTextColor = findViewById(R.id.selected_text_color);
         editCategory = findViewById(R.id.edit_category);
+        mDefaultColor  = ContextCompat.getColor(AddToDoActivity.this,R.color.Pink);
 
         helper = new DiaryDBHelper(this);
+
+        selectedTextColor.setBackgroundColor(mDefaultColor);
+        selectedTextColor.setText(mDefaultColor+"");
 
         editDate.setText(String.format(MainActivity.selectedCal.get(Calendar.YEAR) + "-" + "%02d" + "-" + MainActivity.selectedDate, (MainActivity.selectedCal.get(Calendar.MONTH) + 1)));
         editDate.setOnClickListener(new View.OnClickListener() {
@@ -66,16 +81,21 @@ public class AddToDoActivity extends Activity {
         btnSave.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                ToDoVO toDoVO = new ToDoVO();
-                toDoVO.setTitle(editTitle.getText().toString());
-                toDoVO.setDate(editDate.getText().toString().trim());
-                Log.d("color", selectedTextColor.getText() + "");
-                toDoVO.setTextColor(selectedTextColor.getText().toString().trim());
-                toDoVO.setContents(editMemo.getText().toString());
-                toDoVO.setCategory(editCategory.getText().toString());
+                if(editTitle.getText().length() > 0) {
 
-                helper.insertDiary(toDoVO);
-                finish();
+                    ToDoVO toDoVO = new ToDoVO();
+                    toDoVO.setTitle(editTitle.getText().toString());
+                    toDoVO.setDate(editDate.getText().toString().trim());
+                    Log.d("color", selectedTextColor.getText() + "");
+                    toDoVO.setTextColor(selectedTextColor.getText().toString().trim());
+                    toDoVO.setContents(editMemo.getText().toString());
+                    toDoVO.setCategory(editCategory.getText().toString());
+
+                    helper.insertDiary(toDoVO);
+                    finish();
+                }else{
+                    Toast.makeText(getApplicationContext(),"제목을 입력해 주세요",Toast.LENGTH_SHORT).show();
+                }
             }
         });
         editCategory.setOnClickListener(new View.OnClickListener() {
@@ -96,6 +116,13 @@ public class AddToDoActivity extends Activity {
             @Override
             public void onClick(View v) {
                 finish();
+            }
+        });
+
+        selectedTextColor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                colorSelectDialog();
             }
         });
     }
@@ -187,10 +214,65 @@ public class AddToDoActivity extends Activity {
         });
         return custom;
     }
-    public Dialog colorSelectDialog(){
-        final Dialog custom =  new Dialog(this);
-        Dialog
-        return custom;
-    }
 
+    public void colorSelectDialog(){
+        AmbilWarnaDialog colorPicker = new AmbilWarnaDialog(this, mDefaultColor, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+            @Override
+            public void onCancel(AmbilWarnaDialog dialog) {
+
+            }
+
+            @Override
+            public void onOk(AmbilWarnaDialog dialog, int color) {
+                mDefaultColor = color;
+                selectedTextColor.setBackgroundColor(mDefaultColor);
+                selectedTextColor.setText(mDefaultColor+"");
+            }
+        });
+        colorPicker.show();
+    }
+    class CategoryListAdapter  extends ArrayAdapter<String> {
+        private Context context;        // MainActiviy.this
+        private int itemLayout;         // R.layout.my_item
+        private List<String> categoryList;  // data 집합
+
+        public CategoryListAdapter(@NonNull Context context, int resource, List<String> objects) {
+            super(context,resource,objects);
+            this.context = context;
+            this.itemLayout = resource;
+            this.categoryList = objects;
+        }
+
+        @NonNull
+        @Override
+        public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
+            final MyItemHolder holder ;
+
+            if(convertView == null) {
+                Log.i("convert test", "null");
+                // getView 메소드 처음 실행 시 inflate 함.
+                LayoutInflater inflater = (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+                // my_item.xml 파일 팽창해서 객체화.false
+                convertView = inflater.inflate(itemLayout, parent, false);
+
+                holder = new MyItemHolder();
+                holder.category = convertView.findViewById(android.R.id.text1);
+
+                // inflate결과 홀더에 기억시키기
+                convertView.setTag(holder);
+            }else{
+                Log.i("convert test", "not null");
+                // getView 메소드 첫실행 아닌경우 이전 inflate 재활용
+                holder = (MyItemHolder)convertView.getTag();
+            }
+
+            holder.category.setText(categoryList.get(position));
+
+            return convertView;
+        }
+
+        class MyItemHolder{
+            TextView category;
+        }
+    }
 }

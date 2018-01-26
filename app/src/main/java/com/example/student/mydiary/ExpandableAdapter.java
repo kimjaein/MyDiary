@@ -21,10 +21,12 @@ public class ExpandableAdapter extends BaseExpandableListAdapter {
     private  ArrayList<String> arrayList;
     private HashMap<String,ArrayList<ToDoVO>> hashMap;
     private LayoutInflater inflater;
+    private Context context;
 
    public ExpandableAdapter(Context context, ArrayList<String> arrayList, HashMap<String,ArrayList<ToDoVO>> hashMap){
        this.arrayList = arrayList;
        this.hashMap= hashMap;
+       this.context=context;
        this.inflater= (LayoutInflater)context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
    }
 
@@ -66,7 +68,7 @@ public class ExpandableAdapter extends BaseExpandableListAdapter {
     @Override
     public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
        if(convertView == null){
-           convertView = inflater.inflate(android.R.layout.simple_expandable_list_item_1,parent,false);
+           convertView = inflater.from(context).inflate(android.R.layout.simple_expandable_list_item_1,parent,false);
        }
         TextView textView = convertView.findViewById(android.R.id.text1);
        textView.setText(getGroup(groupPosition).toString());
@@ -77,16 +79,18 @@ public class ExpandableAdapter extends BaseExpandableListAdapter {
     @Override
     public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
         if(convertView == null){
-            convertView = inflater.inflate(R.layout.item_todo_list_child,parent,false);
+            convertView = inflater.from(context).inflate(R.layout.item_todo_list_child,parent,false);
         }
         Button textColor = convertView.findViewById(R.id.item_text_color);
-        TextView textView = convertView.findViewById(R.id.item_title);
+        TextView textTitle = convertView.findViewById(R.id.item_title);
+        TextView textCategory = convertView.findViewById(R.id.item_category);
         if(getGroupCount() == 0 ){
-            textView.setText("일정이 없습니다.");
+            textTitle.setText("일정이 없습니다.");
         }else if(childPosition == hashMap.get(getGroup(groupPosition)).size()) {
         }else{
-            textView.setText(getChild(groupPosition, childPosition).getTitle());
-            textColor.setBackgroundColor(Color.parseColor(getChild(groupPosition, childPosition).getTextColor()));
+            textTitle.setText(getChild(groupPosition, childPosition).getTitle());
+            textColor.setBackgroundColor(Integer.parseInt(getChild(groupPosition, childPosition).getTextColor()));
+            textCategory.setText(getChild(groupPosition, childPosition).getCategory());
         }
         return convertView;
     }
