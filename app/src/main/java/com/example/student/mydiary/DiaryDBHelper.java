@@ -136,6 +136,7 @@ public class DiaryDBHelper extends SQLiteOpenHelper {
     public void deleteDialry(int todoNum){
         db.delete("TODO_TABLE","TODO_NUMBER="+todoNum,null);
     }
+
     public ArrayList<ToDoVO> selectToDoListByCategory(String category){
         String sql = "SELECT TODO_NUMBER, TITLE, CATEGORY,CONTENTS,DATE, TEXT_COLOR "
                 +" FROM TODO_TABLE WHERE CATEGORY ='"+category+"' ORDER BY DATE";
@@ -156,5 +157,24 @@ public class DiaryDBHelper extends SQLiteOpenHelper {
             TodoVOList.add(toDoVO);
         }
         return TodoVOList;
+    }
+    public ToDoVO selectOneToDo(int todoNum){
+        String sql = "SELECT TODO_NUMBER, TITLE, DATE ,CONTENTS ,CATEGORY , TEXT_COLOR "
+                +" FROM TODO_TABLE where TODO_NUMBER ="+todoNum+" ORDER BY DATE";
+
+        Cursor cursor = db.rawQuery(sql, null);
+        ToDoVO todoOne = new ToDoVO();
+
+        while(cursor.moveToNext()){
+            // 칼럼 번호 인덱스는 0부터 시작
+            todoOne.setToDoNum(cursor.getInt(0));
+            todoOne.setTitle(cursor.getString(1));
+            todoOne.setDate(cursor.getString(2));
+            todoOne.setContents(cursor.getString(3));
+            todoOne.setCategory(cursor.getString(4));
+            todoOne.setTextColor(cursor.getString(5));
+
+        }
+        return todoOne;
     }
 }

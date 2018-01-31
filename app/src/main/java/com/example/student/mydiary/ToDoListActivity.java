@@ -1,6 +1,7 @@
 package com.example.student.mydiary;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ExpandableListView;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,17 +45,12 @@ public class ToDoListActivity extends Activity {
         for (int i = 0; i < expandableAdapter.getGroupCount(); i++) {
             expandableListView.expandGroup(i);
         }
-        expandableListView.setOnGroupClickListener(new ExpandableListView.OnGroupClickListener() {
-            @Override
-            public boolean onGroupClick(ExpandableListView parent, View v, int groupPosition, long id) {
-
-                return false;
-            }
-        });
         expandableListView.setOnChildClickListener(new ExpandableListView.OnChildClickListener() {
             @Override
             public boolean onChildClick(ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
-
+                Intent intent = new Intent(ToDoListActivity.this,OneTodoActivity.class);
+                intent.putExtra("oneTodo",helper.selectOneToDo(expandableAdapter.getChild(groupPosition,childPosition).getToDoNum()));
+                startActivity(intent);
                 return false;
             }
         });

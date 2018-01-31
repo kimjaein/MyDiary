@@ -13,11 +13,14 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import yuku.ambilwarna.AmbilWarnaDialog;
+
 
 public class OneTodoActivity extends Activity {
     private Button delete,update,textColor;
     private EditText editTitle,editDate,editCategory,editContents;
     private DiaryDBHelper helper;
+    private int mDefaultColor;
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -32,17 +35,27 @@ public class OneTodoActivity extends Activity {
         editCategory = findViewById(R.id.edit_category_read);
         editContents = findViewById(R.id.edit_memo_read);
 
+
         Intent intent = getIntent();
         final ToDoVO oneTodo = (ToDoVO) intent.getParcelableExtra("oneTodo");
 
         helper=new DiaryDBHelper(this);
 
+        mDefaultColor = Integer.parseInt(oneTodo.getTextColor());
+
         editTitle.setText(oneTodo.getTitle());
-        textColor.setBackgroundColor(Integer.parseInt(oneTodo.getTextColor()));
-        textColor.setText(oneTodo.getTextColor()+"");
+        textColor.setBackgroundColor(mDefaultColor);
+        textColor.setText(mDefaultColor+"");
         editCategory.setText(oneTodo.getCategory());
         editDate.setText(oneTodo.getDate());
         editContents.setText(oneTodo.getContents());
+
+        textColor.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                colorSelectDialog();
+            }
+        });
 
         delete.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -64,8 +77,7 @@ public class OneTodoActivity extends Activity {
                     toDoVO.setContents(editContents.getText().toString());
                     toDoVO.setCategory(editCategory.getText().toString());
 
-                    helper.updateDiary(toDoVO);
-                    finish();
+                    updateDialog(toDoVO).show();
                 }else{
                     Toast.makeText(getApplicationContext(),"제목을 입력해 주세요",Toast.LENGTH_SHORT).show();
                 }
@@ -73,6 +85,7 @@ public class OneTodoActivity extends Activity {
         });
 
     }
+
     public Dialog delteDialog(final int todoNum){
         AlertDialog.Builder builder=  new AlertDialog.Builder(this);
 
@@ -93,5 +106,45 @@ public class OneTodoActivity extends Activity {
                         })
                         .create();
         return dialog;
+    }
+
+    public Dialog updateDialog(final ToDoVO toDoVO){
+        AlertDialog.Builder builder=  new AlertDialog.Builder(this);
+
+        Dialog dialog =
+                builder.setTitle("일정 수정").setMessage("변경사항을 저장하시겠습니까?")
+                        .setPositiveButton("YES", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                helper.updateDiary(toDoVO);
+                                OneTodoActivity.this.finish();
+                                finish();
+                            }
+                        })
+                        .setNegativeButton("NO", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                dialog.cancel();
+                            }
+                        })
+                        .create();
+        return dialog;
+    }
+
+    public void colorSelectDialog(){
+        AmbilWarnaDialog colorPicker = new AmbilWarnaDialog(this, mDefaultColor, new AmbilWarnaDialog.OnAmbilWarnaListener() {
+            @Override
+            public void onCancel(AmbilWarnaDialog dialog) {
+
+            }
+
+            @Override
+            public void onOk(AmbilWarnaDialog dialog, int color) {
+                mDefaultColor = color;
+                textColor.setBackgroundColor(mDefaultColor);
+                textColor.setText(mDefaultColor+"");
+            }
+        });
+        colorPicker.show();
     }
 }

@@ -39,7 +39,6 @@ public class AddToDoActivity extends Activity {
     private Button btnCancle, btnSave;
     private TextView selectedTextColor;
     private DiaryDBHelper helper;
-    private Paint mPaint;
     int mDefaultColor;
 
     @Override
